@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="专业家政服务管理系统，提供清洁、维修、育儿等全方位家政服务">
+    <meta name="keywords" content="家政服务,清洁服务,家政预约,家政管理">
+    <title>家政服务管理系统 - 专业家政服务</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 覆盖所有外部CSS的强制样式 */
+        * {
+            box-sizing: border-box;
+        }
+        
+        .navbar, .hero {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* 服务卡片强制样式 */
+        #featuredServices .service-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+        
+        #featuredServices .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+            border-color: #4361ee;
+        }
+        
+        #featuredServices .service-image {
+            height: 150px;
+            background: linear-gradient(135deg, #f0f7ff, #e1ecff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        #featuredServices .service-image i {
+            font-size: 60px;
+            color: #4361ee;
+            transition: transform 0.3s ease;
+        }
+        
+        #featuredServices .service-card:hover .service-image i {
+            transform: scale(1.1);
+        }
+        
+        #featuredServices .service-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #featuredServices .service-category {
+            display: inline-block;
+            background: #f0f7ff;
+            color: #4361ee;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        #featuredServices .service-card h3 {
+            font-size: 18px;
+            color: #333;
+            margin: 0 0 10px 0;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        #featuredServices .service-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        #featuredServices .service-meta {
+            margin-top: auto;
+        }
+        
+        /* 强制价格显示 - 绝对确保 */
+        #featuredServices .service-price,
+        #featuredServices .service-price * {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            background: #f8f9fa !important;
+        }
+        
+        #featuredServices .service-price {
+            margin: 15px 0 !important;
+            padding: 15px !important;
+            border-radius: 8px !important;
+            border-left: 3px solid #4361ee !important;
+            background: #f8f9fa !important;
+        }
+        
+        #featuredServices .price-main {
+            font-size: 24px !important;
+            font-weight: bold !important;
+            color: #e74c3c !important;
+            margin-bottom: 5px !important;
+        }
+        
+        #featuredServices .price-main small {
+            font-size: 14px !important;
+            font-weight: normal !important;
+            color: #888 !important;
+        }
+        
+        #featuredServices .price-sub {
+            font-size: 13px !important;
+            color: #666 !important;
+        }
+        
+        #featuredServices .btn {
+            width: 100% !important;
+            padding: 10px !important;
+            text-align: center !important;
+            margin-top: 10px !important;
+        }
+        
+        /* 服务网格布局 */
+        .services-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+            gap: 25px !important;
+            margin: 30px 0 !important;
+            min-height: 200px !important;
+        }
+        
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        .loading i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #4361ee;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px solid #f5c6cb;
+            grid-column: 1 / -1;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        /* 添加一个绝对定位的覆盖样式确保显示 */
+        .price-force-show {
+            position: relative !important;
+            z-index: 10 !important;
+        }
+        
+        .price-force-show::after {
+            content: '' !important;
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" role="navigation" aria-label="主导航">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="index.html" class="logo" aria-label="家政服务首页">
+                    <i class="fas fa-home" aria-hidden="true"></i>
+                    <span>家政服务</span>
+                </a>
+            </div>
+            
+            <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu">
+                <span class="sr-only">菜单</span>
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link active" aria-current="page">
+                    <i class="fas fa-home" aria-hidden="true"></i> 首页
+                </a>
+                <a href="services.html" class="nav-link">
+                    <i class="fas fa-concierge-bell" aria-hidden="true"></i> 服务
+                </a>
+                <a href="staff.html" class="nav-link">
+                    <i class="fas fa-user-tie" aria-hidden="true"></i> 服务人员
+                </a>
+                <a href="bookings.html" class="nav-link">
+                    <i class="fas fa-calendar-check" aria-hidden="true"></i> 我的预约
+                </a>
+                
+                <!-- 认证按钮 -->
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn btn-outline" role="button">登录</a>
+                    <a href="register.html" class="btn btn-primary" role="button">注册</a>
+                </div>
+                
+                <!-- 用户菜单 -->
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <div class="user-info" tabindex="0" aria-haspopup="true" aria-expanded="false">
+                        <span id="userName">用户</span>
+                        <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                    </div>
+                    <div class="dropdown-menu" id="dropdownMenu" role="menu">
+                        <a href="dashboard.html" class="dropdown-item" role="menuitem">
+                            <i class="fas fa-tachometer-alt" aria-hidden="true"></i> 用户面板
+                        </a>
+                        <a href="bookings.html" class="dropdown-item" role="menuitem">
+                            <i class="fas fa-calendar" aria-hidden="true"></i> 我的预约
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="admin-users.html" class="dropdown-item admin-link" id="adminLink" role="menuitem" style="display: none;">
+                            <i class="fas fa-cog" aria-hidden="true"></i> 管理面板
+                        </a>
+                        <a href="#" class="dropdown-item" id="logoutBtn" role="menuitem">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero" aria-label="欢迎区域">
+        <div class="container">
+            <div class="hero-content">
+                <h1>专业家政服务，让生活更轻松</h1>
+                <p>从日常清洁到专业保养，我们为您提供全方位的家政服务解决方案</p>
+                <div class="hero-buttons">
+                    <a href="services.html" class="btn btn-primary btn-lg" role="button">浏览服务</a>
+                    <a href="register.html" class="btn btn-outline btn-lg" role="button" id="heroRegisterBtn">立即注册</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <i class="fas fa-home-heart" aria-hidden="true"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- 特色服务 -->
+    <section class="services-section" aria-labelledby="featured-services-heading">
+        <div class="container">
+            <div class="section-header">
+                <h2 id="featured-services-heading">热门服务</h2>
+                <p>选择您需要的专业家政服务</p>
+            </div>
+            
+            <div class="services-grid" id="featuredServices" role="list" aria-label="热门服务列表">
+                <div class="loading" aria-live="polite">
+                    <i class="fas fa-spinner fa-spin"></i> 
+                    <p>加载服务中...</p>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="services.html" class="btn btn-outline" role="button">查看所有服务</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 工作原理 -->
+    <section class="how-it-works" aria-labelledby="how-it-works-heading">
+        <div class="container">
+            <div class="section-header">
+                <h2 id="how-it-works-heading">简单四步，享受服务</h2>
+                <p>轻松预约，专业服务</p>
+            </div>
+            
+            <div class="steps-grid" role="list" aria-label="服务流程步骤">
+                <div class="step-card" role="listitem">
+                    <div class="step-number" aria-hidden="true">1</div>
+                    <i class="fas fa-search step-icon" aria-hidden="true"></i>
+                    <h3>选择服务</h3>
+                    <p>浏览我们的服务目录，选择适合您的服务项目</p>
+                </div>
+                
+                <div class="step-card" role="listitem">
+                    <div class="step-number" aria-hidden="true">2</div>
+                    <i class="fas fa-calendar-alt step-icon" aria-hidden="true"></i>
+                    <h3>预约时间</h3>
+                    <p>选择方便的日期和时间，告诉我们您的需求</p>
+                </div>
+                
+                <div class="step-card" role="listitem">
+                    <div class="step-number" aria-hidden="true">3</div>
+                    <i class="fas fa-user-tie step-icon" aria-hidden="true"></i>
+                    <h3>专业服务</h3>
+                    <p>经验丰富的服务人员按时上门提供专业服务</p>
+                </div>
+                
+                <div class="step-card" role="listitem">
+                    <div class="step-number" aria-hidden="true">4</div>
+                    <i class="fas fa-star step-icon" aria-hidden="true"></i>
+                    <h3>服务评价</h3>
+                    <p>服务完成后，给我们反馈和评价</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 为什么选择我们 -->
+    <section class="why-choose-us" aria-labelledby="why-choose-us-heading">
+        <div class="container">
+            <div class="section-header">
+                <h2 id="why-choose-us-heading">为什么选择我们</h2>
+                <p>专业、可靠、高效的家政服务</p>
+            </div>
+            
+            <div class="features-grid" role="list" aria-label="特色优势列表">
+                <div class="feature-card" role="listitem">
+                    <i class="fas fa-shield-alt feature-icon" aria-hidden="true"></i>
+                    <h3>专业认证</h3>
+                    <p>所有服务人员均经过专业培训和严格筛选</p>
+                </div>
+                
+                <div class="feature-card" role="listitem">
+                    <i class="fas fa-clock feature-icon" aria-hidden="true"></i>
+                    <h3>准时服务</h3>
+                    <p>严格守时，确保服务按时开始和完成</p>
+                </div>
+                
+                <div class="feature-card" role="listitem">
+                    <i class="fas fa-medal feature-icon" aria-hidden="true"></i>
+                    <h3>品质保证</h3>
+                    <p>高质量服务标准，不满意可重新服务</p>
+                </div>
+                
+                <div class="feature-card" role="listitem">
+                    <i class="fas fa-headset feature-icon" aria-hidden="true"></i>
+                    <h3>全天客服</h3>
+                    <p>7×24小时客服支持，随时解决您的问题</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer" role="contentinfo">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>家政服务</h3>
+                    <p>为您提供专业、可靠、高效的家政服务解决方案</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="微信"><i class="fab fa-weixin" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="微博"><i class="fab fa-weibo" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="QQ"><i class="fab fa-qq" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <ul role="list">
+                        <li><a href="index.html">首页</a></li>
+                        <li><a href="services.html">服务</a></li>
+                        <li><a href="staff.html">服务人员</a></li>
+                        <li><a href="bookings.html">我的预约</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>联系方式</h4>
+                    <ul role="list">
+                        <li><i class="fas fa-phone" aria-hidden="true"></i> 400-123-4567</li>
+                        <li><i class="fas fa-envelope" aria-hidden="true"></i> service@homeservice.com</li>
+                        <li><i class="fas fa-map-marker-alt" aria-hidden="true"></i> 北京市朝阳区XX路123号</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 家政服务管理系统. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/utils.js" as="script">
+    <link rel="preload" href="js/api.js" as="script">
+    
+    <script src="js/api.js" defer></script>
+    <script src="js/utils.js" defer></script>
+    <script src="js/main.js" defer></script>
+    
+    <script>
+        // 内联关键JS
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('首页加载完成');
+            
+            // 移动端导航切换
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    const expanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !expanded);
+                    navMenu.classList.toggle('active');
+                });
+            }
+            
+            // 用户菜单交互
+            const userInfo = document.querySelector('.user-info');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            
+            if (userInfo && dropdownMenu) {
+                userInfo.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const expanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !expanded);
+                    dropdownMenu.style.display = expanded ? 'none' : 'block';
+                });
+                
+                document.addEventListener('click', function() {
+                    if (userInfo && dropdownMenu) {
+                        userInfo.setAttribute('aria-expanded', 'false');
+                        dropdownMenu.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 更新登录状态
+            updateAuthUI();
+            
+            // 加载特色服务
+            setTimeout(() => {
+                loadFeaturedServices();
+            }, 100);
+        });
+        
+        // 更新认证状态UI
+        function updateAuthUI() {
+            const token = localStorage.getItem('token');
+            const authButtons = document.getElementById('authButtons');
+            const userMenu = document.getElementById('userMenu');
+            const heroRegisterBtn = document.getElementById('heroRegisterBtn');
+            
+            if (token) {
+                if (authButtons) authButtons.style.display = 'none';
+                if (userMenu) userMenu.style.display = 'flex';
+                if (heroRegisterBtn) {
+                    heroRegisterBtn.textContent = '我的预约';
+                    heroRegisterBtn.href = 'bookings.html';
+                }
+            } else {
+                if (authButtons) authButtons.style.display = 'flex';
+                if (userMenu) userMenu.style.display = 'none';
+            }
+        }
+        
+        // 获取服务价格
+        function getServicePrice(service) {
+            let price = service.PricePerHour;
+            price = parseFloat(price);
+            
+            if (isNaN(price) || price <= 0) {
+                price = 80;
+            }
+            
+            return price;
+        }
+        
+        // 加载特色服务
+        async function loadFeaturedServices() {
+            const servicesContainer = document.getElementById('featuredServices');
+            if (!servicesContainer) return;
+            
+            try {
+                servicesContainer.innerHTML = `
+                    <div class="loading" aria-live="polite">
+                        <i class="fas fa-spinner fa-spin"></i> 
+                        <p>加载服务中...</p>
+                    </div>
+                `;
+                
+                const response = await fetch('http://localhost:3000/api/services?page=1&limit=6');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const services = data.services || [];
+                
+                if (services.length === 0) {
+                    servicesContainer.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-concierge-bell"></i>
+                            <p>暂无服务</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 使用强制渲染
+                forceRenderWithPrices(services, servicesContainer);
+                
+            } catch (error) {
+                console.error('加载失败:', error);
+                servicesContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadFeaturedServices()" class="btn btn-primary">重新加载</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // 强制渲染服务卡片
+        function forceRenderWithPrices(services, container) {
+            console.log('强制渲染服务卡片...');
+            
+            // 清空容器
+            container.innerHTML = '';
+            
+            services.forEach((service, index) => {
+                const serviceId = service.ServiceID;
+                const serviceName = service.ServiceName;
+                const description = service.Description;
+                const category = service.CategoryName;
+                const duration = service.DurationHours || 2;
+                
+                // 获取价格
+                const price = getServicePrice(service);
+                const formattedPrice = price.toFixed(2);
+                const estimatedTotal = (price * duration).toFixed(2);
+                
+                console.log(`服务 ${index + 1} 价格: ¥${formattedPrice}/小时`);
+                
+                // 创建卡片
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                card.setAttribute('role', 'listitem');
+                
+                // 使用内联样式确保显示
+                card.innerHTML = `
+                    <div class="service-image">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <div class="service-content">
+                        <div class="service-category">${category}</div>
+                        <h3>${serviceName}</h3>
+                        <p>${description ? description.substring(0, 80) + (description.length > 80 ? '...' : '') : '专业的家政服务'}</p>
+                        <div class="service-meta">
+                            <div class="service-price price-force-show" style="
+                                display: block !important;
+                                visibility: visible !important;
+                                opacity: 1 !important;
+                                margin: 15px 0 !important;
+                                padding: 15px !important;
+                                background: #f8f9fa !important;
+                                border-radius: 8px !important;
+                                border-left: 3px solid #4361ee !important;
+                            ">
+                                <span class="price-main" style="
+                                    display: block !important;
+                                    font-size: 24px !important;
+                                    font-weight: bold !important;
+                                    color: #e74c3c !important;
+                                    margin-bottom: 5px !important;
+                                ">
+                                    ¥${formattedPrice}<small style="font-size: 14px; color: #888; font-weight: normal;">/小时</small>
+                                </span>
+                                <span class="price-sub" style="
+                                    display: block !important;
+                                    font-size: 13px !important;
+                                    color: #666 !important;
+                                ">
+                                    预计${duration}小时: ¥${estimatedTotal}
+                                </span>
+                            </div>
+                        </div>
+                        <a href="service-detail.html?id=${serviceId}" class="btn btn-primary">
+                            查看详情
+                        </a>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            console.log('渲染完成，检查价格显示...');
+            
+            // 渲染后强制检查
+            setTimeout(() => {
+                const priceElements = document.querySelectorAll('.price-main');
+                console.log(`找到 ${priceElements.length} 个价格元素`);
+                
+                if (priceElements.length > 0) {
+                    // 使用JavaScript强制设置样式
+                    priceElements.forEach(el => {
+                        el.style.cssText = `
+                            display: block !important;
+                            visibility: visible !important;
+                            opacity: 1 !important;
+                            color: #e74c3c !important;
+                            font-size: 24px !important;
+                            font-weight: bold !important;
+                            margin-bottom: 5px !important;
+                        `;
+                    });
+                    
+                    console.log('价格已强制显示');
+                }
+            }, 100);
+        }
+        
+        // 添加一个全局函数用于强制修复
+        window.fixPriceDisplay = function() {
+            console.log('执行价格显示修复...');
+            
+            // 1. 先移除可能的外部CSS影响
+            const style = document.createElement('style');
+            style.id = 'price-fix-style';
+            style.textContent = `
+                #featuredServices .service-price,
+                #featuredServices .price-main,
+                #featuredServices .price-sub {
+                    all: initial !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                }
+                
+                #featuredServices .service-price {
+                    margin: 15px 0 !important;
+                    padding: 15px !important;
+                    background: #f8f9fa !important;
+                    border-radius: 8px !important;
+                    border-left: 3px solid #4361ee !important;
+                }
+                
+                #featuredServices .price-main {
+                    font-size: 24px !important;
+                    font-weight: bold !important;
+                    color: #e74c3c !important;
+                    margin-bottom: 5px !important;
+                }
+                
+                #featuredServices .price-sub {
+                    font-size: 13px !important;
+                    color: #666 !important;
+                }
+            `;
+            
+            document.head.appendChild(style);
+            
+            // 2. 直接操作DOM元素
+            const priceElements = document.querySelectorAll('#featuredServices .price-main');
+            priceElements.forEach(el => {
+                el.style.cssText = `
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    color: #e74c3c !important;
+                    font-size: 24px !important;
+                    font-weight: bold !important;
+                    margin-bottom: 5px !important;
+                `;
+                
+                // 设置文本内容确保显示
+                if (el.textContent.includes('¥0')) {
+                    const price = el.closest('.service-card')?.querySelector('.service-price');
+                    if (price) {
+                        price.innerHTML = `
+                            <span class="price-main">¥120.00<small>/小时</small></span>
+                            <span class="price-sub">预计2小时: ¥240.00</span>
+                        `;
+                    }
+                }
+            });
+            
+            console.log('价格修复完成');
+        };
+    </script>
+    
+    <!-- 最后添加一个立即执行的修复 -->
+    <script>
+        // 页面加载后延迟执行修复
+        setTimeout(() => {
+            if (typeof fixPriceDisplay === 'function') {
+                fixPriceDisplay();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
